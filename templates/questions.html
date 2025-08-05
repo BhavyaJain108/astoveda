@@ -1,44 +1,159 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Questions - Page {{ page }}</title>
+    <title>{% if page == 1 %}Demographics{% else %}Questions - Page {{ page }}{% endif %}</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <script>
+        // Real-time state saving
+        function saveAnswer(questionId, value) {
+            fetch('{{ url_for("quiz.save_answer") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    question_id: questionId,
+                    answer: value
+                })
+            }).catch(console.error);
+        }
+
+        // Prevent navigation only after final quiz completion
+        let quizCompleted = false;
+        let isSubmitting = false;
+
+        // Auto-save on input change
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle text inputs
+            document.querySelectorAll('input[type="text"], input[type="date"]').forEach(input => {
+                input.addEventListener('input', function() {
+                    const questionId = this.name.split('_')[1];
+                    saveAnswer(questionId, this.value);
+                });
+            });
+
+            // Handle radio buttons
+            document.querySelectorAll('input[type="radio"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.checked) {
+                        const questionId = this.name.split('_')[1];
+                        saveAnswer(questionId, this.value);
+                    }
+                });
+            });
+
+            // Handle select dropdowns
+            document.querySelectorAll('select').forEach(select => {
+                select.addEventListener('change', function() {
+                    const questionId = this.name.split('_')[1];
+                    saveAnswer(questionId, this.value);
+                });
+            });
+
+            // Handle form submission
+            document.querySelector('form').addEventListener('submit', function(e) {
+                isSubmitting = true;
+                const nextPage = document.querySelector('input[name="next_page"]').value;
+                
+                if (nextPage === 'results') {
+                    quizCompleted = true;
+                    // Set up back navigation prevention only for final submission
+                    setTimeout(function() {
+                        history.pushState(null, null, location.href);
+                        window.onpopstate = function() {
+                            history.go(1);
+                            alert('Quiz completed! You cannot go back. Please start a new quiz if needed.');
+                        };
+                    }, 100);
+                }
+            });
+        });
+
+        // Clean up session if user closes tab before completing quiz
+        window.addEventListener('beforeunload', function(e) {
+            // Only cleanup if not submitting form (to avoid clearing during normal navigation)
+            if (!isSubmitting) {
+                navigator.sendBeacon('/cleanup_session', '');
+            }
+        });
+    </script>
 </head>
 <body>
-    <h1>Quiz Questions - Page {{ page }}</h1>
+    <h1>{% if page == 1 %}Tell us about yourself{% else %}Quiz Questions - Page {{ page }}{% endif %}</h1>
     <p>Progress: {{ page }}/{{ max_page }}</p>
     
-    <form action="/submit" method="post">
+    <form action="{{ url_for('quiz.submit_answers') }}" method="post">
         {% for question in questions %}
             <div>
                 <h3>{{ question.question_text }}{% if question.required %} *{% endif %}</h3>
                 
-                {% if question.question_type == 'multiple_choice' %}
+                {% if question.question_type == 'demographics' %}
+                    {% if question.question_text == 'What is your name?' %}
+                        <input 
+                            type="text" 
+                            id="question_{{ question.id }}"
+                            name="question_{{ question.id }}" 
+                            value="{{ existing_responses.get(question.id, '') }}" 
+                            placeholder="Enter your full name"
+                            maxlength="100"
+                            autocomplete="name"
+                            {% if question.required %}required{% endif %}>
+                    {% elif question.question_text == 'Date of birth' %}
+                        <input 
+                            type="date" 
+                            id="question_{{ question.id }}"
+                            name="question_{{ question.id }}" 
+                            value="{{ existing_responses.get(question.id, '') }}" 
+                            min="1900-01-01"
+                            max="{{ today }}"
+                            autocomplete="bday"
+                            {% if question.required %}required{% endif %}>
+                    {% elif question.options %}
+                        <select 
+                            id="question_{{ question.id }}"
+                            name="question_{{ question.id }}" 
+                            {% if question.required %}required{% endif %}>
+                            <option value="">Choose your location type...</option>
+                            {% for option in question.get_options() %}
+                                <option value="{{ option }}" {% if existing_responses.get(question.id) == option %}selected{% endif %}>{{ option }}</option>
+                            {% endfor %}
+                        </select>
+                    {% endif %}
+                {% elif question.question_type == 'multiple_choice' %}
                     {% for option in question.get_options() %}
                         <div>
-                            <input type="radio" name="question_{{ question.id }}" value="{{ option }}" id="q{{ question.id }}_{{ loop.index }}" {% if question.required %}required{% endif %}>
+                            <input type="radio" name="question_{{ question.id }}" value="{{ option }}" id="q{{ question.id }}_{{ loop.index }}" {% if existing_responses.get(question.id) == option %}checked{% endif %} {% if question.required %}required{% endif %}>
                             <label for="q{{ question.id }}_{{ loop.index }}">{{ option }}</label>
                         </div>
                     {% endfor %}
                 {% elif question.question_type == 'yes_no' %}
                     <div>
-                        <input type="radio" name="question_{{ question.id }}" value="yes" id="q{{ question.id }}_yes" {% if question.required %}required{% endif %}>
+                        <input type="radio" name="question_{{ question.id }}" value="yes" id="q{{ question.id }}_yes" {% if existing_responses.get(question.id) == 'yes' %}checked{% endif %} {% if question.required %}required{% endif %}>
                         <label for="q{{ question.id }}_yes">Yes</label>
                     </div>
                     <div>
-                        <input type="radio" name="question_{{ question.id }}" value="no" id="q{{ question.id }}_no" {% if question.required %}required{% endif %}>
+                        <input type="radio" name="question_{{ question.id }}" value="no" id="q{{ question.id }}_no" {% if existing_responses.get(question.id) == 'no' %}checked{% endif %} {% if question.required %}required{% endif %}>
                         <label for="q{{ question.id }}_no">No</label>
                     </div>
                 {% endif %}
             </div><br>
         {% endfor %}
         
-        {% if page < max_page %}
-            <input type="hidden" name="next_page" value="{{ page + 1 }}">
-            <button type="submit">Next Page</button>
-        {% else %}
-            <input type="hidden" name="next_page" value="processing">
-            <button type="submit">Finish Quiz</button>
-        {% endif %}
+        <div>
+            {% if page > 1 %}
+                <a href="{{ url_for('quiz.questions_page', page=page-1) }}">← Previous Page</a>
+            {% endif %}
+            
+            {% if page < max_page %}
+                <input type="hidden" name="next_page" value="{{ page + 1 }}">
+                <button type="submit" style="margin-left: 10px;">Next Page</button>
+            {% else %}
+                <input type="hidden" name="next_page" value="results">
+                <button type="submit" style="margin-left: 10px;">Finish Quiz</button>
+            {% endif %}
+        </div>
     </form>
 </body>
 </html>
