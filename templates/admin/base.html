@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quiz Admin - {% block title %}{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <nav>
+        <h2>Quiz Admin</h2>
+        <ul>
+            <li><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+            <li><a href="{{ url_for('admin.quizzes') }}">Quizzes</a></li>
+            <li><a href="{{ url_for('admin.analytics') }}">Analytics</a></li>
+            <li><a href="{{ url_for('admin.logout') }}">Logout</a></li>
+        </ul>
+    </nav>
+    
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="messages">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Questions - Page {{ page }}</title>
+</head>
+<body>
+    <h1>Quiz Questions - Page {{ page }}</h1>
+    <p>Progress: {{ page }}/{{ max_page }}</p>
+    
+    <form action="/submit" method="post">
+        {% for question in questions %}
+            <div>
+                <h3>{{ question.question_text }}{% if question.required %} *{% endif %}</h3>
+                
+                {% if question.question_type == 'multiple_choice' %}
+                    {% for option in question.get_options() %}
+                        <div>
+                            <input type="radio" name="question_{{ question.id }}" value="{{ option }}" id="q{{ question.id }}_{{ loop.index }}" {% if question.required %}required{% endif %}>
+                            <label for="q{{ question.id }}_{{ loop.index }}">{{ option }}</label>
+                        </div>
+                    {% endfor %}
+                {% elif question.question_type == 'yes_no' %}
+                    <div>
+                        <input type="radio" name="question_{{ question.id }}" value="yes" id="q{{ question.id }}_yes" {% if question.required %}required{% endif %}>
+                        <label for="q{{ question.id }}_yes">Yes</label>
+                    </div>
+                    <div>
+                        <input type="radio" name="question_{{ question.id }}" value="no" id="q{{ question.id }}_no" {% if question.required %}required{% endif %}>
+                        <label for="q{{ question.id }}_no">No</label>
+                    </div>
+                {% endif %}
+            </div><br>
+        {% endfor %}
+        
+        {% if page < max_page %}
+            <input type="hidden" name="next_page" value="{{ page + 1 }}">
+            <button type="submit">Next Page</button>
+        {% else %}
+            <input type="hidden" name="next_page" value="processing">
+            <button type="submit">Finish Quiz</button>
+        {% endif %}
+    </form>
+</body>
+</html>

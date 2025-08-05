@@ -1,0 +1,37 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Quizzes{% endblock %}
+
+{% block content %}
+<h1>Quizzes</h1>
+
+<a href="{{ url_for('admin.new_quiz') }}">Create New Quiz</a>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Version</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for quiz in quizzes %}
+        <tr>
+            <td>{{ quiz.id }}</td>
+            <td>{{ quiz.title }}</td>
+            <td>{{ quiz.version }}</td>
+            <td>{{ 'Active' if quiz.is_active else 'Inactive' }}</td>
+            <td>{{ quiz.created_at.strftime('%Y-%m-%d') if quiz.created_at else '' }}</td>
+            <td>
+                <a href="{{ url_for('admin.edit_quiz', quiz_id=quiz.id) }}">Edit</a>
+                <a href="{{ url_for('admin.quiz_questions', quiz_id=quiz.id) }}">Questions</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

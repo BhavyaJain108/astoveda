@@ -1,0 +1,118 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+
+<form method="POST">
+    {{ form.hidden_tag() }}
+    
+    <div>
+        {{ form.page_number.label }}
+        {{ form.page_number() }}
+        {% if form.page_number.errors %}
+            <ul>
+                {% for error in form.page_number.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div>
+        {{ form.question_type.label }}
+        {{ form.question_type() }}
+        {% if form.question_type.errors %}
+            <ul>
+                {% for error in form.question_type.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div>
+        {{ form.question_text.label }}
+        {{ form.question_text() }}
+        {% if form.question_text.errors %}
+            <ul>
+                {% for error in form.question_text.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div id="options-div">
+        {{ form.options.label }}
+        {{ form.options() }}
+        <small>{{ form.options.description }}</small>
+        {% if form.options.errors %}
+            <ul>
+                {% for error in form.options.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div>
+        {{ form.order_index.label }}
+        {{ form.order_index() }}
+        {% if form.order_index.errors %}
+            <ul>
+                {% for error in form.order_index.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div>
+        {{ form.weight.label }}
+        {{ form.weight() }}
+        {% if form.weight.errors %}
+            <ul>
+                {% for error in form.weight.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div>
+        {{ form.required() }}
+        {{ form.required.label }}
+    </div>
+    
+    <div>
+        {{ form.is_active() }}
+        {{ form.is_active.label }}
+    </div>
+    
+    <button type="submit">Save Question</button>
+    <a href="{{ url_for('admin.quiz_questions', quiz_id=form.quiz_id.data) }}">Cancel</a>
+</form>
+
+<script>
+// Show/hide options field based on question type
+document.getElementById('question_type').addEventListener('change', function() {
+    var optionsDiv = document.getElementById('options-div');
+    if (this.value === 'multiple_choice') {
+        optionsDiv.style.display = 'block';
+    } else {
+        optionsDiv.style.display = 'none';
+    }
+});
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    var questionType = document.getElementById('question_type').value;
+    var optionsDiv = document.getElementById('options-div');
+    if (questionType !== 'multiple_choice') {
+        optionsDiv.style.display = 'none';
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Start Quiz - {{ quiz.title }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 50px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .description {
+            font-size: 18px;
+            line-height: 1.6;
+            color: #666;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .info-box {
+            background: #e8f4fd;
+            border-left: 4px solid #2196F3;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .info-box h3 {
+            margin-top: 0;
+            color: #1976D2;
+        }
+        .buttons {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .btn {
+            background: #2196F3;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 0 10px;
+        }
+        .btn:hover {
+            background: #1976D2;
+        }
+        .btn-secondary {
+            background: #666;
+        }
+        .btn-secondary:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Ready to Start Your {{ quiz.title }}?</h1>
+        
+        <div class="description">
+            {{ quiz.description }}
+        </div>
+        
+        <div class="info-box">
+            <h3>What to Expect:</h3>
+            <ul>
+                <li>This assessment will take approximately 5-10 minutes</li>
+                <li>You'll answer questions about your demographics and personality</li>
+                <li>You can navigate back and forth between pages to review your answers</li>
+                <li>Once you view your results, you won't be able to go back and change answers</li>
+                <li>Your responses will help us provide personalized insights</li>
+            </ul>
+        </div>
+        
+        <div class="buttons">
+            <a href="/" class="btn btn-secondary">Back to Home</a>
+            <a href="/begin" class="btn">Begin Assessment</a>
+        </div>
+    </div>
+</body>
+</html>

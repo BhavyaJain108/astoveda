@@ -1,0 +1,62 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h1>Dashboard</h1>
+
+<div class="stats">
+    <div class="stat-box">
+        <h3>Total Sessions</h3>
+        <p>{{ total_sessions }}</p>
+    </div>
+    
+    <div class="stat-box">
+        <h3>Completed Sessions</h3>
+        <p>{{ completed_sessions }}</p>
+    </div>
+    
+    <div class="stat-box">
+        <h3>Completion Rate</h3>
+        <p>{{ "%.1f"|format(completion_rate) }}%</p>
+    </div>
+    
+    <div class="stat-box">
+        <h3>Active Questions</h3>
+        <p>{{ total_questions }}</p>
+    </div>
+    
+    <div class="stat-box">
+        <h3>Active Quizzes</h3>
+        <p>{{ total_quizzes }}</p>
+    </div>
+</div>
+
+<h2>Recent Sessions</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Session ID</th>
+            <th>Started</th>
+            <th>Completed</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for session in recent_sessions %}
+        <tr>
+            <td>{{ session.session_id[:8] }}...</td>
+            <td>{{ session.started_at.strftime('%Y-%m-%d %H:%M') if session.started_at else '' }}</td>
+            <td>{{ session.completed_at.strftime('%Y-%m-%d %H:%M') if session.completed_at else 'In Progress' }}</td>
+            <td>{{ 'Completed' if session.completed_at else 'In Progress' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="actions">
+    <a href="{{ url_for('admin.quizzes') }}">Manage Quizzes</a>
+    <a href="{{ url_for('admin.analytics') }}">View Analytics</a>
+    <a href="{{ url_for('admin.export_responses') }}">Export Data</a>
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Demographics</title>
+</head>
+<body>
+    <h1>Tell us about yourself</h1>
+    <form action="/submit" method="post">
+        {% for question in questions %}
+            <div>
+                <label>{{ question.question_text }}{% if question.required %} *{% endif %}</label><br>
+                
+                {% if question.question_text == 'What is your name?' %}
+                    <input type="text" name="question_{{ question.id }}" {% if question.required %}required{% endif %}>
+                {% elif question.question_text == 'Date of birth' %}
+                    <input type="date" name="question_{{ question.id }}" {% if question.required %}required{% endif %}>
+                {% elif question.options %}
+                    <select name="question_{{ question.id }}" {% if question.required %}required{% endif %}>
+                        <option value="">Choose...</option>
+                        {% for option in question.get_options() %}
+                            <option value="{{ option }}">{{ option }}</option>
+                        {% endfor %}
+                    </select>
+                {% endif %}
+            </div><br>
+        {% endfor %}
+        
+        <input type="hidden" name="next_page" value="2">
+        <button type="submit">Continue to Questions</button>
+    </form>
+</body>
+</html>
